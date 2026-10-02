@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "apple-health-insights": {
+      "command": "python3",
+      "args": ["-m", "apple_health_insights.mcp_server"]
+    }
+  }
+}

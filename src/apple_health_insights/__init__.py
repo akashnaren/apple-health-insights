@@ -1,7 +1,8 @@
 """Parse an Apple Health export into aggregates and one insight.
 
-Real exports stay on the machine that runs the ingest. This package does not
-talk to Google Drive and does not return raw Health XML.
+The ingest command does not talk to Google Drive and does not return raw
+Health XML. The optional MCP server can list and download a Drive zip when a
+token is set, and its tools return aggregates only.
 """
 
 __version__ = "0.1.0"

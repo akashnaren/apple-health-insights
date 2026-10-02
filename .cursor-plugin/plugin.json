@@ -1,0 +1,13 @@
+{
+  "name": "apple-health-insights",
+  "displayName": "Apple Health Insights",
+  "version": "0.1.0",
+  "description": "Four aggregates-only MCP tools over a private Apple Health export overview. The Marketplace listing is parked and unpublished.",
+  "author": {
+    "name": "akashnaren"
+  },
+  "repository": "https://github.com/akashnaren/apple-health-insights",
+  "keywords": ["health", "aggregates", "mcp"],
+  "skills": "./skills",
+  "mcpServers": "./mcp.json"
+}

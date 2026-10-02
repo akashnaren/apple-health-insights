@@ -2,7 +2,7 @@
 
 A manual Apple Health export is a zip full of XML. This project turns that file into a short private overview: how sleep, activity, cardio, workouts, and body mass look in the export, plus one insight. The code is public. The export is not.
 
-Nothing here connects to an iPhone, and nothing here calls Google Drive. You export on the phone, put the zip in a private Drive folder, and run the ingest on a machine you control. The living overview stays in that private folder or in a local scratch directory.
+Nothing here connects to an iPhone. The ingest command does not call Google Drive. You export on the phone, put the zip in a private Drive folder, and run the ingest on a machine you control. An optional MCP plugin can list and download from that folder when a token is present; CI never does. The living overview stays in that private folder or in a local scratch directory.
 
 This is an observational digest. It is not medical advice, a diagnosis, or a training plan.
 
@@ -20,13 +20,14 @@ A series that is absent from the export is written as **no data in this export**
 ## What this is not
 
 - Not a live HealthKit sync
-- Not a Drive client, and not an MCP plugin
+- Not a Drive client inside the ingest command. Drive list and download exist only in the MCP plugin, and only when a token is set
+- Not a published Marketplace plugin. Packaging is parked and unpublished
 - Not a place to commit exports, tokens, or a real overview
 - Not a medical device
 
 ## How a week moves through the system
 
-Once a week, export from the Health app on the iPhone and put the zip in the private Drive folder `1kmz1nYyZS7je75Ej_QH9r8m0880W62xo` (Health Data). Inside that folder the export lives at `exports/YYYY/MM/apple_health_export/`. The middle folder is the month, two digits. October 2026 is `exports/2026/10/`, which is where the live tree sits. That folder id is documentation of the drop zone. This repository has no Drive token and cannot read the folder.
+Once a week, export from the Health app on the iPhone and put the zip in the private Drive folder `1kmz1nYyZS7je75Ej_QH9r8m0880W62xo` (Health Data). Inside that folder the export lives at `exports/YYYY/MM/apple_health_export/`. The middle folder is the month, two digits. October 2026 is `exports/2026/10/`, which is where the live tree sits. That folder id is documentation of the drop zone. This repository does not store a Drive token. The ingest command cannot read the folder. The MCP plugin can, when a token is supplied at runtime.
 
 Ingest runs locally and records a content hash so the same file is not written twice. After a successful ingest the zip is deleted from Drive. The living overview stays in Health Data or in private scratch. On a local disk this package also skips a `processed/` directory; Drive does not use that name.
 
@@ -125,13 +126,52 @@ Try the synthetic zip before a real one. The fixture is labeled `SYNTHETIC`, the
 
 ## Privacy
 
-Real Apple Health exports stay in the private Drive Health Data folder (`exports/YYYY/MM/apple_health_export/`) and in private scratch on the machine that runs ingest (`state/health/`, gitignored). This repository does not download them. CI does not either. A real zip, its `export.xml`, and the overview produced from it never belong in git or in a pull request. The only export committed here is the synthetic fixture. After a successful ingest the Drive zip is deleted.
+Real Apple Health exports stay in the private Drive Health Data folder (`exports/YYYY/MM/apple_health_export/`) and in private scratch on the machine that runs ingest (`state/health/`, gitignored). CI does not download them. The MCP plugin downloads a zip only into that scratch directory when a token is present, and only long enough to ingest it. A real zip, its `export.xml`, and the overview produced from it never belong in git or in a pull request. The only export committed here is the synthetic fixture. After a successful ingest the Drive zip is deleted.
 
 - The GitHub repo is public. Treat every committed file as world-readable.
 - Do not commit a real zip, `export.xml`, CSV pull, living overview, or normalized store.
 - Do not commit Drive tokens, file contents, or `.env` files.
 - Docs and CI use the synthetic fixture only.
-- Tooling that later wraps this package should return the digest, not the XML.
+- The MCP plugin returns the digest, not the XML.
+
+## MCP plugin
+
+Cursor can load this repository as a plugin. The Marketplace listing is parked and unpublished. Do not publish it.
+
+The server is stdio, four tools, nothing else:
+
+```bash
+python3 -m apple_health_insights.mcp_server
+```
+
+`python -m apple_health_insights.mcp_server` is the same module when `python` is Python 3.11 or newer. Root `mcp.json` launches `python3` with that module. The console script `apple-health-insights` and `python -m apple_health_insights ingest` stay the ingest entrypoints. The plugin shells out to the module; it does not reimplement parsing.
+
+| Tool | Returns |
+|---|---|
+| `health_inbox_status` | id, modifiedTime, size, sanitized label. No file bodies |
+| `health_ingest_latest` | status, counts, insight kind, path to the overview |
+| `health_overview` | structured aggregates and the short overview markdown |
+| `health_insights` | ranked insights, at most three (v1 is one) |
+
+None of them return `export.xml`, zip bytes, Record attributes, GPS, or notes.
+
+Drive is optional. Set `HEALTH_DRIVE_ACCESS_TOKEN` or `GOOGLE_ACCESS_TOKEN` to use folder `1kmz1nYyZS7je75Ej_QH9r8m0880W62xo`. Inside that folder the layout is `exports/YYYY/MM/apple_health_export/`. Without a token, pass `inbox_path` or a fixture `path`. CI uses `fixtures/synthetic/` only.
+
+When a Drive download ingests successfully (the CLI exits 0), the server deletes that zip in Drive and removes the scratch copy under the private `--out` directory. The ingest package itself still does not call Drive. A failed ingest leaves the Drive zip in place.
+
+`HEALTH_STATE_DIR` overrides the default `state/health` overview directory. `HEALTH_DRIVE_FOLDER_ID` overrides the Health Data folder id. `HEALTH_INBOX_PATH` is the local inbox used when no token is set.
+
+The living overview document `1Olwsx1Utz3nqGq8D5DyaTJ5mzS1MsqUG` is private. This repository does not fetch it. The host environment for this packaging cut is `fca4ad14-be06-11f1-bb68-864e54d14197`.
+
+Soft-prove on a synthetic fixture:
+
+```bash
+python -m pip install -e ".[dev]"
+python -m pytest
+python3 -m apple_health_insights.mcp_server
+```
+
+The pytest suite calls `health_ingest_latest` on `fixtures/synthetic/export.zip`, then `health_overview` and `health_insights`. The payloads are aggregates. They do not contain the fixture XML.
 
 ## Development
 
