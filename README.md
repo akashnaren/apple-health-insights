@@ -161,7 +161,7 @@ When a Drive download ingests successfully (the CLI exits 0), the server deletes
 
 `HEALTH_STATE_DIR` overrides the default `state/health` overview directory. `HEALTH_DRIVE_FOLDER_ID` overrides the Health Data folder id. `HEALTH_INBOX_PATH` is the local inbox used when no token is set.
 
-The living overview document `1Olwsx1Utz3nqGq8D5DyaTJ5mzS1MsqUG` is private. This repository does not fetch it. The host environment for this packaging cut is `fca4ad14-be06-11f1-bb68-864e54d14197`.
+The living overview stays private under the Health Data root or in local scratch. This repository does not fetch it and does not embed a Drive file id for it.
 
 Soft-prove on a synthetic fixture:
 

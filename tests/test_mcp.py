@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -25,6 +26,11 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_XML = ROOT / "fixtures" / "synthetic" / "export.xml"
 FIXTURE_ZIP = ROOT / "fixtures" / "synthetic" / "export.zip"
 FOLDER_ID = HEALTH_DATA_FOLDER_ID
+DRIVE_FILE_ID = re.compile(r"\b1[A-Za-z0-9_-]{20,}\b")
+ENV_UUID = re.compile(
+    r"\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -155,7 +161,9 @@ def test_empty_inbox_status_has_no_bodies(tmp_path: Path, monkeypatch: pytest.Mo
     assert status["folder_id"] == FOLDER_ID
     assert status["layout"] == "exports/YYYY/MM/apple_health_export/"
     assert status["drive_configured"] is False
-    assert "1Olwsx1Utz3nqGq8D5DyaTJ5mzS1MsqUG" not in json.dumps(status)
+    payload = json.dumps(status)
+    assert set(DRIVE_FILE_ID.findall(payload)) <= {FOLDER_ID}
+    assert "overview_id" not in payload
 
 
 def test_synthetic_ingest_overview_and_insights_omit_xml(tmp_path: Path):
@@ -305,12 +313,17 @@ def test_plugin_descriptor_matches_stdio_launch():
         assert "<Record" not in text
     assert not (ROOT / ".cursor-plugin" / "marketplace.json").exists()
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    security = (ROOT / "SECURITY.md").read_text(encoding="utf-8")
+    overview_skill = (ROOT / "skills" / "health-overview" / "SKILL.md").read_text(encoding="utf-8")
     assert "Marketplace listing is parked and unpublished" in readme
     assert "exports/YYYY/MM/apple_health_export/" in readme
-    assert "fca4ad14-be06-11f1-bb68-864e54d14197" in readme
-    assert "1Olwsx1Utz3nqGq8D5DyaTJ5mzS1MsqUG" in readme
-    security = (ROOT / "SECURITY.md").read_text(encoding="utf-8")
+    assert "private under the Health Data root or in local scratch" in readme
+    assert ENV_UUID.search(readme) is None
+    for text in (readme, security, overview_skill):
+        assert set(DRIVE_FILE_ID.findall(text)) <= {FOLDER_ID}
+        assert "local scratch" in text or "scratch directory" in text
     assert "aggregates" in security.lower()
+    assert "do not embed a Drive file id" in overview_skill
 
 
 def test_docs_and_plugin_files_do_not_embed_export_xml():

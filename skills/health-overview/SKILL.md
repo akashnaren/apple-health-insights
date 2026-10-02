@@ -9,6 +9,6 @@ Call `health_overview` for the structured digest and the short markdown. Call `h
 
 Both tools read the private `--out` directory (`state/health/` unless overridden). They return aggregates only. They do not return raw export XML.
 
-The living overview document `1Olwsx1Utz3nqGq8D5DyaTJ5mzS1MsqUG` stays in private Drive. Do not copy it into the repository.
+The living overview stays private under the Health Data root or in local scratch. Do not copy it into the repository, and do not embed a Drive file id for it.
 
 This is an observational digest, not medical advice. The Cursor Marketplace listing is parked and unpublished.
