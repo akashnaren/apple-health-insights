@@ -4,7 +4,7 @@
 *.zip
 !fixtures/synthetic/*.zip
 export.xml
-!fixtures/synthetic/**
+!fixtures/synthetic/export.xml
 __pycache__/
 .venv/
 venv/
@@ -12,7 +12,18 @@ node_modules/
 .DS_Store
 .pytest_cache/
 .mypy_cache/
-/workspace/state/health/
+*.egg-info/
+dist/
+build/
+.coverage
+htmlcov/
+
+# Private scratch for a real export and the living overview.
 state/health/
+Health overview.md
+normalized-store.json
+ingest-manifest.json
+inbox-status.json
+
 *.pem
 *.key
