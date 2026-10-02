@@ -12,4 +12,4 @@ Never commit:
 
 CI runs that fixture only. It does not download from Drive and it has no health credentials.
 
-A real export stays in the private Drive Health Data folder. Soft-prove it only from private scratch (`state/health/`, gitignored), then leave the zip and the XML there. Do not copy either into this repo, CI logs, or a pull request. The living overview from a real export stays in that scratch directory or in Drive, not in git.
+A real export stays in the private Drive Health Data folder at `exports/YYYY/MM/apple_health_export/` (the live tree is `exports/2026/10/`). Soft-prove it only from private scratch (`state/health/`, gitignored). After a successful ingest the Drive zip is deleted. Do not copy the zip or the XML into this repo, CI logs, or a pull request. The living overview from a real export stays in that scratch directory or in Drive, not in git.

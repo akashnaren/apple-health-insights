@@ -26,22 +26,24 @@ A series that is absent from the export is written as **no data in this export**
 
 ## How a week moves through the system
 
-Once a week, export from the Health app on the iPhone and drop the zip into the private Drive folder `1kmz1nYyZS7je75Ej_QH9r8m0880W62xo` (Health Data). That folder id is documentation of the drop zone. This repository has no Drive token and cannot read the folder.
+Once a week, export from the Health app on the iPhone and put the zip in the private Drive folder `1kmz1nYyZS7je75Ej_QH9r8m0880W62xo` (Health Data). Inside that folder the export lives at `exports/YYYY/MM/apple_health_export/`. The middle folder is the month, two digits. October 2026 is `exports/2026/10/`, which is where the live tree sits. That folder id is documentation of the drop zone. This repository has no Drive token and cannot read the folder.
 
-When a new zip is there, ingest it locally. The package records a content hash so the same file is not written twice. Archiving the zip to a `processed/` folder inside Drive is a later step for the integration layer. This package only skips anything already sitting in a local `processed/` directory.
+Ingest runs locally and records a content hash so the same file is not written twice. After a successful ingest the zip is deleted from Drive. The living overview stays in Health Data or in private scratch. On a local disk this package also skips a `processed/` directory; Drive does not use that name.
 
 ```mermaid
 flowchart LR
   phone[iPhone Health export]
-  drive[Private Drive Health Data]
+  drive["Drive exports/YYYY/MM/apple_health_export"]
   detect[Find the newest zip]
   parse[Parse export.xml]
   rollup[Normalize the v1 metrics]
   overview[Private Health overview]
   insight[One insight]
+  deleteZip[Delete the zip after success]
   phone --> drive --> detect --> parse --> rollup
   rollup --> overview
   rollup --> insight
+  rollup --> deleteZip
 ```
 
 Inside the package the path is the same whether the input is a zip, a loose `export.xml`, or a folder:
@@ -123,7 +125,7 @@ Try the synthetic zip before a real one. The fixture is labeled `SYNTHETIC`, the
 
 ## Privacy
 
-Real Apple Health exports stay in the private Drive Health Data folder and in private scratch on the machine that runs ingest (`state/health/`, gitignored). This repository does not download them. CI does not either. A real zip, its `export.xml`, and the overview produced from it never belong in git or in a pull request. The only export committed here is the synthetic fixture.
+Real Apple Health exports stay in the private Drive Health Data folder (`exports/YYYY/MM/apple_health_export/`) and in private scratch on the machine that runs ingest (`state/health/`, gitignored). This repository does not download them. CI does not either. A real zip, its `export.xml`, and the overview produced from it never belong in git or in a pull request. The only export committed here is the synthetic fixture. After a successful ingest the Drive zip is deleted.
 
 - The GitHub repo is public. Treat every committed file as world-readable.
 - Do not commit a real zip, `export.xml`, CSV pull, living overview, or normalized store.
