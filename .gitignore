@@ -3,6 +3,8 @@
 !.env.example
 *.zip
 !fixtures/synthetic/*.zip
+*.zip.partial
+mcp-drive-processed.json
 export.xml
 !fixtures/synthetic/export.xml
 __pycache__/
