@@ -12,4 +12,4 @@ Never commit:
 
 CI runs that fixture only. It does not download from Drive and it has no health credentials.
 
-Scratch output under `state/health/` is gitignored. Keep a real overview there, or in the private Drive Health Data folder, not in git.
+A real export stays in the private Drive Health Data folder. Soft-prove it only from private scratch (`state/health/`, gitignored), then leave the zip and the XML there. Do not copy either into this repo, CI logs, or a pull request. The living overview from a real export stays in that scratch directory or in Drive, not in git.

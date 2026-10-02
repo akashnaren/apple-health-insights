@@ -123,9 +123,11 @@ Try the synthetic zip before a real one. The fixture is labeled `SYNTHETIC`, the
 
 ## Privacy
 
+Real Apple Health exports stay in the private Drive Health Data folder and in private scratch on the machine that runs ingest (`state/health/`, gitignored). This repository does not download them. CI does not either. A real zip, its `export.xml`, and the overview produced from it never belong in git or in a pull request. The only export committed here is the synthetic fixture.
+
 - The GitHub repo is public. Treat every committed file as world-readable.
 - Do not commit a real zip, `export.xml`, CSV pull, living overview, or normalized store.
-- Do not commit Drive tokens or `.env` files.
+- Do not commit Drive tokens, file contents, or `.env` files.
 - Docs and CI use the synthetic fixture only.
 - Tooling that later wraps this package should return the digest, not the XML.
 
